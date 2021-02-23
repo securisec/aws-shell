@@ -316,8 +316,20 @@ class AWSShell(object):
                         initial_document=Document(self.current_docs,
                                                   cursor_position=0))
                     self.cli.request_redraw()
+                    full_cmd = self.process_localstack(full_cmd)
                     p = self._popen_cls(full_cmd, shell=True, env=self._env)
                     p.communicate()
+
+    def process_localstack(self, command):
+        # split command
+        c = command.split()
+        # check if aws is prefixed
+        if c[0:2] == ['aws', 'aws']:
+            c[0:2] = ['aws', '--endpoint-url=http://localhost:4566']
+        else:
+            c.insert(1, '--endpoint-url=http://localhost:4566')
+        out = ' '.join(c)
+        return out
 
     def stop_input_and_refresh_cli(self):
         """Stop input by raising an `InputInterrupt`, forces a cli refresh.
